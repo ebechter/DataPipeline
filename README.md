@@ -1,7 +1,24 @@
 # iLocater Data Reduction Pipeline
-A set of modular pipelines and reduction routines for the iLocater  spectrograph
+A set of modular pipelines and reduction routines for the iLocater spectrograph
 
 Authors: Eric Bechter
+
+
+# About the code
+
+The principal goal of the iLocater Data Reduction Pipeline (DRP) to create automated pipelines to reduce, extract and analyze spectra from iLocater's echelle spectrograph. The standard output of the pipeline is a fits cube with the optimally extracted, wavelength calibrated and instrumetal drift corrected spectrum for each of the science images. Additionally, there are routines for the computation of precise radial velocities and bisector spans via the cross-correlation method. A detailed decription of the structure and performance of these pipelines can be found in Bechter et al 2018.
+
+# Usage   
+
+The code requires some initialization parameters to be set in Main.m, including: 
+
+1) The path to the raw science data folder of .fits images. 
+2) 
+
+# Dependencies
+
+The iLocater Data Reduction Pipeline is written in MATLAB and tested primarily in MATLAB 2017b. 
+
 <!-- 
 # About the code
 The principal goal of CERES is the developement of fully automated pipelines for the reduction, extraction and analysis of echelle spectrograph data. CERES currently counts with dedicated pipelines for eleven different instruments, which are included in the repository: APO3.5m/ARCES, CAHA2.2m/CAFE, Euler1.2m/Coralie, DuPont2.5m/Echelle, MPG2.2m/FEROS, ESO1.0m/FIDEOS, ESO3.6m/HARPS, KECK10m/HIRES, MAGELLAN6.5m/MIKE, MALLEGAN6.5m/PFS, PUC0.5m/PUCHEROS. These processing recipes can be used as a reference for developing pipelines for new instruments. A detailed decription of the structure and performance of these pipelines can be found in [Brahm et al 2016](http://arxiv.org/abs/1609.02279). The standard output of the pipelines is a fits cube with the optimally extracted, wavelength calibrated and instrumetal drift corrected spectrum for each of the science images. Additionally, CERES includes routines for the computation of precise radial velocities and bisector spans via the cross-correlation method, and an automated algorithm to obtain an estimate of the atmospheric parameters of the observed star.
