@@ -1,0 +1,133 @@
+%% Modular Pipeline Main Script
+
+
+% clean up before running
+clear all
+close all
+
+% add all folders below current directory
+addpath(genpath(pwd))
+
+% global custom color list
+global colors
+scienceframe = get(groot,'DefaultAxesColorOrder');
+for ii = 1:7
+    colors{ii}=scienceframe(ii,:);
+end
+colors{8} =[0.175 0.175 0.175];
+
+
+% Pipeline options
+
+
+Recalibrate = 0; % wavelength calibration = 1, load old solution = 0
+
+RetraceOrders = 0; % find spectral orders again = 1, load old map = 0
+
+ProcessDirectory = 0; % process an entire directory of files = 1, load single file = 0
+
+
+
+
+% ----------- Image Reduction -----------%
+
+% This section deals with basic image reduction
+% Needs dark frame and flat field directories.
+% Not currently used.
+
+flat = fitsread ('S:\Pipeline\PhotonNoisePipeline\Flat\Format12.22.fits');
+
+
+
+% ----------- Wavelength Calibration -----------%
+
+
+if Recalibrate == 1
+    
+    % [wave_cal] = WavelengthCalibration(wavecalframe,etalonlinelist);
+    
+else
+    
+    % This skips re-calibration and loads in coefficients used in the simulator
+    coeffs = 'polycoeffs12.22.mat';
+    [wave_cal] = ReloadWavelengthSolution(coeffs);
+end
+
+
+% ----------- Spectral Extraction -----------%
+
+% Load appropriate files
+
+
+if ProcessDirectory == 1
+    
+    % Run a directory
+    sciencepath = 'S:\Pipeline\ModularPipeline\DetectorFrames\';
+    file_id = strcat(sciencepath,'*.fits');
+    allFiles = dir(file_id);
+    fname = {allFiles.name};
+    
+else
+    
+    sciencepath = 'S:\Pipeline\ModularPipeline\DetectorFrames\';
+    fname = {'NoAberrations.mat'};
+    
+end
+
+
+if RetraceOrders == 1
+    
+    % retrace orders
+    trace = BasicOrderIdentification(flat);
+    save tracefile1.mat trace
+    
+else
+    
+    tracefile = 'tracefile1.mat';
+    load(tracefile,'-mat');
+    trace = trace(:,1:3:end);
+end
+
+window =5;
+norm=0;
+
+
+
+for ii = 1:size(fname,2)  % Work on all files
+    
+    
+    %     scienceframe = fitsread([sciencepath fname{ii}]);
+    scienceframe = load([sciencepath fname{ii}],'-mat');
+    
+    % Extract all orders here
+    ex_orders{ii} = BasicOrderExtraction(scienceframe.DetectorFace,trace,window,norm);
+end
+
+%     ex_science = HOrderExtraction(science,window,0); % for physically
+%     flattened orders only
+
+return
+
+
+for ii = 1:size(fname,2)  % Work on all files
+    clear msk
+    clear sciencespec
+    clear science
+    
+    fprintf('\nWorking on file %s\n',fname{ii})
+    
+    science = fitsread([path fname{ii}]);
+    
+    %     science = science(:,:,tracenum);
+    
+    HeaderCell = fitshead([path fname{ii}]);
+    idx = find(strcmp(HeaderCell, 'RV')); % single line engine
+    injected = [injected HeaderCell{idx,2}];
+    
+    % Extract 39 Orders
+    science = BasicOrderExtraction(science,trace,window,1);
+    %     science = HOrderExtraction(science,window,0);
+    
+
+
+
