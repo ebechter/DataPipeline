@@ -1,9 +1,6 @@
 %% Modular Pipeline Main Script
-
-
 % clean up before running
 clear all
-close all
 clc
 % add all folders below current directory
 addpath(genpath(pwd))
@@ -24,13 +21,14 @@ Recalibrate = 0; % wavelength calibration = 1, load old solution = 0
 
 RetraceOrders = 0; % find spectral orders again = 1, load old map = 0
 
-ProcessDirectory = 0; % process an entire directory of files = 1, load single file = 0
+ProcessDirectory = 1; % process an entire directory of files = 1, load single file = 0
 
+trace = 1;
 start_order = 1;
 spec_order = 36;
 load mask16.mat
 mask(:,1)=mask(:,1)*10;
-offset = 0.02133;
+offset = 0;
 % ----------- Image Reduction -----------%
 
 % This section deals with basic image reduction
@@ -52,7 +50,7 @@ else
     
     % This skips re-calibration and loads in coefficients used in the simulator
     coeffs = 'polycoeffs12.22.mat';
-    [wave_cal] = ReloadWavelengthSolution(coeffs);
+    [wave_cal] = ReloadWavelengthSolution(coeffs,trace);
 end
 
 
@@ -64,7 +62,7 @@ end
 if ProcessDirectory == 1
     
     % Run a directory
-    sciencepath = '/Volumes/Software/Pipeline/ModularPipeline/DetectorFrames/';
+    sciencepath = '/Volumes/Software/Pipeline/ModularPipeline/DetectorFrames/Coma/';
     file_id = strcat(sciencepath,'*.fits');
     allFiles = dir(file_id);
     fname = {allFiles.name};
@@ -72,7 +70,7 @@ if ProcessDirectory == 1
 else
     
     sciencepath = '/Volumes/Software/Pipeline/ModularPipeline/DetectorFrames/';
-    fname = {'Coma2.mat'};
+    fname = {'ScienceTraceTestFull.fits'};
     
 end
 
@@ -98,11 +96,11 @@ norm=0;
 for ii = 1:size(fname,2)  % Work on all files
     
     
-    %     scienceframe = fitsread([sciencepath fname{ii}]);
-    scienceframe = load([sciencepath fname{ii}],'-mat');
+    scienceframe = fitsread([sciencepath fname{ii}]);
+%     scienceframe = load([sciencepath fname{ii}],'-mat');
     
     % Extract all orders here
-    ex_orders{ii} = BasicOrderExtraction(scienceframe.DetectorFace5,trace,window,norm);
+    ex_orders{ii} = BasicOrderExtraction(scienceframe,trace,window,norm);
     
     
     %     ex_science = HOrderExtraction(science,window,0); % for physically
@@ -226,10 +224,16 @@ for ii = 1:size(fname,2)  % Work on all files
     
     % Fit the average XC function
     gstartpoints = [200 vel0 1 0];
-    [qual,aveans(ii)] = GaussianFit(XCvelocities,AV_XC',gstartpoints,1,colors{rem(ii,length(colors)-1)+1},3);
-    fprintf('Average Fit RV residual (m/s): %.5f, R^2: %.6f\n',aveans(ii)-0.02133,qual)
+    [qual,aveans(ii)] = GaussianFit(XCvelocities,AV_XC',gstartpoints,0,colors{rem(ii,length(colors)-1)+1},3);
+    fprintf('Average Fit RV residual (m/s): %.5f, R^2: %.6f\n',aveans(ii)*1000,qual)
     
     
     
     %     fprintf('Average Fit RV residual (m/s): %.5f, R^2: %.6f\n',aveans(ii)*1000-injected(end)-offset,qual)
 end
+
+plotvals = sort(aveans)*1000;
+figure(1)
+hold on
+plot(plotvals,'.','markersize',15)
+

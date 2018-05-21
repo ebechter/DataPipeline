@@ -1,7 +1,7 @@
-function [wave_cal] = ReloadWavelengthSolution(coeffs)
+function [wave_cal] = ReloadWavelengthSolution(coeffs,trace)
 
 load(coeffs); 
-cfs = wave_coeff(:,:,1); %trace num
+cfs = wave_coeff(:,:,trace); %trace num
 xxf=((0.5:4095.5)-2048)/100;
 
 for ii = 1:36
